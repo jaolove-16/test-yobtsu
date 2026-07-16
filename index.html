@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>jaolove studio16</title>
+    <!-- นำเข้า Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600&family=Itim&family=Mitr:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ตั้งค่าพื้นฐานและโทนสีครีมพาสเทลตามภาพ */
+        :root {
+            --bg-color: #FFFDF0;
+            --card-bg: #FFFFFF;
+            --border-red: #D36B6B;
+            --text-dark: #6C5544;
+            --btn-disabled: #E4E5C7;
+            --btn-active: #C2D5A8;
+            --star-color: #D36B6B;
+            --modal-overlay: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Itim', 'Mitr', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px 10px;
+            overflow-x: hidden;
+        }
+
+        /* คอนเทนเนอร์หลักจำลองหน้าจอมือถือ */
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        /* 1. ส่วนแบนเนอร์รูปภาพ */
+        .banner-container {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background-color: #eee;
+            aspect-ratio: 16 / 9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .banner-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 2. ส่วนข้อมูลร้านค้าและการตกแต่ง */
+        .shop-info {
+            text-align: center;
+            padding: 10px;
+            line-height: 1.6;
+        }
+
+        .shop-title {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+
+        .decor-line {
+            margin: 10px 0;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        /* 3. กล่องให้คะแนนรีวิว */
+        .rating-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-red);
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(211, 107, 107, 0.1);
+        }
+
+        .rating-card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .rating-card p {
+            font-size: 0.9rem;
+            color: #8E7A6E;
+            margin-bottom: 15px;
+        }
+
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 2.2rem;
+            color: #E0E0E0;
+            cursor: pointer;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .star:hover {
+            transform: scale(1.15);
+        }
+
+        .star.selected {
+            color: var(--star-color);
+        }
+
+        .submit-btn {
+            width: 100%;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #7E865E;
+            background-color: var(--btn-disabled);
+            cursor: not-allowed;
+            transition: all 0.3s ease;
+        }
+
+        .submit-btn.active {
+            background-color: var(--btn-active);
+            color: #3B4B27;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+        }
+
+        /* 4. ส่วนแสดงผลรีวิวแบบสไลด์ ซ้าย-ขวา */
+        .reviews-slider-container {
+            width: 100%;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            padding-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ซ่อน Scrollbar ของ Browser เพื่อความสวยงาม */
+        .reviews-slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .reviews-wrapper {
+            display: flex;
+            gap: 12px;
+            width: max-content;
+            padding: 4px;
+        }
+
+        .review-card {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-red);
+            border-radius: 12px;
+            padding: 12px;
+            font-size: 0.85rem;
+            width: 220px; /* ล็อกขนาดเพื่อให้เห็นว่าสามารถสไลด์ได้ */
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 140px;
+        }
+
+        .review-stars {
+            color: var(--star-color);
+            font-size: 0.85rem;
+            margin-bottom: 4px;
+        }
+
+        .review-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            word-break: break-word;
+        }
+
+        .review-body {
+            color: #8E7A6E;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+            word-break: break-word;
+        }
+
+        .review-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .user-avatar {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background-color: #eee;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: bold;
+            font-size: 0.75rem;
+        }
+
+        .review-time {
+            font-size: 0.65rem;
+            color: #aaa;
+        }
+
+        /* 5. สไตล์ของ Pop-up (Modal) ฝากรีวิวตามภาพแนบ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* ให้เด้งขึ้นมาจากด้านล่างแบบ Mobile App */
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            width: 100%;
+            max-width: 450px;
+            background-color: #FFFFFF;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .close-btn {
+            background: #F5F5F5;
+            border: none;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input[type="text"],
+        .form-group textarea {
+            width: 100%;
+            border: 1px solid #EAEAEA;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 0.9rem;
+            outline: none;
+            color: #333;
+        }
+
+        .form-group textarea {
+            resize: none;
+            height: 80px;
+        }
+
+        /* ส่วนอัปโหลดรูปโปรไฟล์ */
+        .image-upload-box {
+            width: 60px;
+            height: 60px;
+            border: 1px solid #EAEAEA;
+            border-radius: 8px;
+            background-color: #F9F9F9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-upload-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: none;
+        }
+
+        .image-upload-box .upload-icon {
+            font-size: 1.2rem;
+            color: #aaa;
+        }
+
+        .modal-submit-btn {
+            width: 100%;
+            background-color: #222222;
+            color: #FFFFFF;
+            border: none;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 10px;
+            font-weight: 400;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 1. ช่องใส่รูปแบนเนอร์ (แก้ไขรูปตามที่กำหนดแล้ว) -->
+        <div class="banner-container">
+            <img src="ไม่มีชื่อ 239_20260716211937.jpg" alt="Banner">
+        </div>
+
+        <!-- 2. ข้อมูลตกแต่งร้าน -->
+        <div class="shop-info">
+            <p class="shop-title">🍀 . ʕ . @jaoriche爱 ♡ ˚ ₊ : 🍎</p>
+            <p style="font-size: 0.85rem; color: #8E7A6E;">
+                ⚔️ เค้ารบกวนคนน่ารักกด ⭐️ ด้านล่างพร้อม ✨<br>
+                🥣 รีวิวการใช้บริการของร้านค้าสั้นๆ ให้ทีน้าค้าบ ♡
+            </p>
+            <p class="decor-line">◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡</p>
+            <p style="font-size: 0.85rem;">thank for your support kub babe~</p>
+            <p class="decor-line">◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡ ◡</p>
+        </div>
+
+        <!-- 3. กล่องให้คะแนนรีวิว -->
+        <div class="rating-card">
+            <h3>plus one for jaolove.studio16</h3>
+            <p>เลือกคะแนนจาก 1 ถึง 5</p>
+            
+            <div class="stars" id="star-rating">
+                <span class="star" data-value="1">★</span>
+                <span class="star" data-value="2">★</span>
+                <span class="star" data-value="3">★</span>
+                <span class="star" data-value="4">★</span>
+                <span class="star" data-value="5">★</span>
+            </div>
+
+            <button id="submit-btn" class="submit-btn" disabled>click here kub babe~</button>
+        </div>
+
+        <!-- 4. ส่วนตัวอย่างรีวิวด้านล่าง (แบบสไลด์ซ้าย-ขวาได้) -->
+        <div class="reviews-slider-container">
+            <div class="reviews-wrapper" id="reviews-wrapper">
+                
+                <!-- การ์ดรีวิวเริ่มต้น 1 -->
+                <div class="review-card">
+                    <div>
+                        <div class="review-stars">★★★★★</div>
+                        <div class="review-title">จ้างทำชีตเช็คคิวงาม</div>
+                        <div class="review-body">แม่ค้าน่ารักมากค้าบ สอนใช้ตั้งแต่ต้นยันจบเลย</div>
+                    </div>
+                    <div class="review-user">
+                        <div class="user-avatar">
+                            <img src="https://via.placeholder.com/26" alt="user">
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">jaoriche爱</span>
+                            <span class="review-time">17 minutes ago</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- การ์ดรีวิวเริ่มต้น 2 -->
+                <div class="review-card">
+                    <div>
+                        <div class="review-stars">★★★★☆</div>
+                        <div class="review-title">คุณริชน่ารักมากกก</div>
+                        <div class="review-body">พลัสวันค่ะ แม่ค้าน่ารักมากก</div>
+                    </div>
+                    <div class="review-user">
+                        <div class="user-avatar">
+                            <img src="https://via.placeholder.com/26" alt="user">
+                        </div>
+                        <div class="user-info">
+                            <span class="user-name">_1602.wst</span>
+                            <span class="review-time">5 hours ago</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 5. หน้าต่าง Pop-up (Modal) สำหรับฝากรีวิว -->
+    <div class="modal-overlay" id="review-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ฝากรีวิว</h2>
+                <button class="close-btn" id="close-modal">✕</button>
+            </div>
+            
+            <div class="form-group">
+                <label>ชื่อรีวิว</label>
+                <input type="text" id="input-title" placeholder="เช่น ประสบการณ์ที่ยอดเยี่ยม">
+            </div>
+
+            <div class="form-group">
+                <label>รีวิวของคุณ *</label>
+                <textarea id="input-body" placeholder="เขียนคำติชมที่ซื่อสัตย์ของคุณ ..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>เกี่ยวกับคุณ</label>
+                <input type="text" id="input-name" placeholder="ชื่อของคุณ *">
+            </div>
+
+            <div class="form-group">
+                <label>รูปถ่ายของคุณ</label>
+                <!-- กล่องจำลองสำหรับคลิกอัปโหลดภาพ -->
+                <div class="image-upload-box" id="upload-box">
+                    <span class="upload-icon">🖼️</span>
+                    <img id="preview-img" src="" alt="Preview">
+                </div>
+                <!-- Input type file ซ่อนไว้เพื่อเรียกใช้ผ่านกล่องด้านบน -->
+                <input type="file" id="input-file" accept="image/*" style="display: none;">
+            </div>
+
+            <button class="modal-submit-btn" id="modal-submit-btn">ส่ง</button>
+        </div>
+    </div>
+    <script>
+        // ประกาศตัวแปรอ้างอิง Elements ต่างๆ
+        const stars = document.querySelectorAll('.star');
+        const submitBtn = document.getElementById('submit-btn');
+        const reviewModal = document.getElementById('review-modal');
+        const closeModal = document.getElementById('close-modal');
+        
+        const uploadBox = document.getElementById('upload-box');
+        const inputFile = document.getElementById('input-file');
+        const previewImg = document.getElementById('preview-img');
+        const uploadIcon = document.querySelector('.upload-icon');
+
+        const modalSubmitBtn = document.getElementById('modal-submit-btn');
+        const reviewsWrapper = document.getElementById('reviews-wrapper');
+
+        // ตัวแปรเก็บข้อมูลชั่วคราว
+        let selectedRating = 0;
+        let base64ImageData = "https://via.placeholder.com/26"; // ใช้รูป Default หากผู้ใช้ไม่ยอมอัปโหลด
+
+        // 1. ระบบกดเลือกคะแนนดาว (ดาวต้องเลือกก่อน ปุ่มถึงยอมให้กดเข้า Pop-up)
+        stars.forEach(star => {
+            star.addEventListener('click', () => {
+                selectedRating = parseInt(star.getAttribute('data-value'));
+                updateStars(selectedRating);
+                
+                if (selectedRating > 0) {
+                    submitBtn.removeAttribute('disabled');
+                    submitBtn.classList.add('active');
+                }
+            });
+        });
+
+        function updateStars(rating) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= rating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        }
+
+        // 2. ระบบเปิด-ปิด Pop-up ฝากรีวิว
+        submitBtn.addEventListener('click', () => {
+            if (selectedRating > 0) {
+                reviewModal.classList.add('show');
+            }
+        });
+
+        closeModal.addEventListener('click', () => {
+            reviewModal.classList.remove('show');
+        });
+
+        // ปิดเมื่อคลิกนอกหน้าต่างคอนเทนต์
+        reviewModal.addEventListener('click', (e) => {
+            if (e.target === reviewModal) {
+                reviewModal.classList.remove('show');
+            }
+        });
+
+        // 3. ระบบจัดการและแปลงไฟล์รูปโปรไฟล์ที่ลูกค้าอัปโหลดเป็น Base64
+        uploadBox.addEventListener('click', () => {
+            inputFile.click();
+        });
+
+        inputFile.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    base64ImageData = event.target.result;
+                    previewImg.src = base64ImageData;
+                    previewImg.style.display = 'block';
+                    if (uploadIcon) uploadIcon.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 4. ระบบเมื่อกดปุ่ม "ส่ง" ใน Pop-up เพื่อเพิ่มข้อมูลแบบ Real-time
+        modalSubmitBtn.addEventListener('click', () => {
+            const titleText = document.getElementById('input-title').value.trim();
+            const bodyText = document.getElementById('input-body').value.trim();
+            const nameText = document.getElementById('input-name').value.trim();
+
+            // ดักเงื่อนไขข้อมูลจำเป็น (ต้องกรอก รีวิว และ ชื่อ)
+            if (!bodyText || !nameText) {
+                alert("กรุณากรอกข้อมูลรีวิวและชื่อของคุณให้ครบถ้วนด้วยนะค้าบ 🥣");
+                return;
+            }
+
+            // สร้างจำนวนดาวสีส้มตามคะแนนที่กดเลือกไว้ตอนแรก
+            let starString = "";
+            for (let i = 1; i <= 5; i++) {
+                if (i <= selectedRating) {
+                    starString += "★";
+                } else {
+                    starString += "☆";
+                }
+            }
+
+            // สร้างรูปแบบ Element สำหรับการ์ดรีวิวชิ้นใหม่
+            const newCard = document.createElement('div');
+            newCard.classList.add('review-card');
+
+            newCard.innerHTML = `
+                <div>
+                    <div class="review-stars">${starString}</div>
+                    <div class="review-title">${titleText || 'รีวิวการบริการ'}</div>
+                    <div class="review-body">${bodyText}</div>
+                </div>
+                <div class="review-user">
+                    <div class="user-avatar">
+                        <img src="${base64ImageData}" alt="user">
+                    </div>
+                    <div class="user-info">
+                        <span class="user-name">${nameText}</span>
+                        <span class="review-time">Just now</span>
+                    </div>
+                </div>
+            `;
+
+            // เพิ่มการ์ดรีวิวใหม่เข้าไปไว้ที่ส่วนหน้าสุดของรายการสไลด์รีวิว
+            reviewsWrapper.insertBefore(newCard, reviewsWrapper.firstChild);
+
+            // เคลียร์ค่าตัวแปร/ฟอร์มใน Pop-up และสั่งปิด
+            document.getElementById('input-title').value = "";
+            document.getElementById('input-body').value = "";
+            document.getElementById('input-name').value = "";
+            previewImg.style.display = 'none';
+            if (uploadIcon) uploadIcon.style.display = 'block';
+            base64ImageData = "https://via.placeholder.com/26";
+            
+            // รีเซ็ตการกดดาวหน้าแรกให้เริ่มใหม่
+            selectedRating = 0;
+            updateStars(0);
+            submitBtn.setAttribute('disabled', 'true');
+            submitBtn.classList.remove('active');
+
+            // ปิด Pop-up
+            reviewModal.classList.remove('show');
+            
+            // แอบเลื่อนหน้าจอการสไลด์รีวิวกลับไปที่อันแรกสุดที่เพิ่งเพิ่มเข้ามา
+            document.querySelector('.reviews-slider-container').scrollLeft = 0;
+        });
+    </script>
+</body>
+</html>
